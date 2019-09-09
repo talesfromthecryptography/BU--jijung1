@@ -23,7 +23,7 @@ void bu_cpy(bigunsigned *dest, bigunsigned *src) {
 }
 
 // Set to 0
-void bu_clear(bigunsigned *a_ptr) { //2nd call - set all 32 bits of a to 0
+void bu_clear(bigunsigned *a_ptr) {
   memset(a_ptr->digit, 0, sizeof(uint32_t)*BU_DIGITS);
   a_ptr->used = 0;
   a_ptr->base = 0;
@@ -31,13 +31,16 @@ void bu_clear(bigunsigned *a_ptr) { //2nd call - set all 32 bits of a to 0
 
 // Shift in place a bigunsigned by cnt bits to the left
 // Example: beef shifted by 4 results in beef0
-void bu_shl_ip(bigunsigned* a_ptr, uint16_t cnt) {
+void bu_shl_ip(bigunsigned* a_ptr, uint16_t cnt) { 
   uint16_t wrds = cnt >> 5; // # of whole words to shift
   uint16_t bits = cnt &0x1f;// number of bits in a word to shift
 
   uint32_t mask = 0xffffffff << bits;
+  
+  //in order to shift a bigunsigned struct cnt bits to the left digit, used and base must all be updated 
 
   // You implement. Avoid memory copying as much as possible.
+  
 }
 
 // Produce a = b + c
@@ -114,42 +117,53 @@ uint16_t bu_len(bigunsigned *a_ptr) {
 //        that will be ignored. For example, "DEAD BEEF" should
 //        be legal input resulting in the value 0xDEADBEEF.
 
+
+void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
+  bu_clear(a_ptr); //set all 32 bits of a to 0
+  
+  unsigned pos = 0;
+  char *s_ptr = s;
+  while (*s_ptr && pos < BU_MAX_HEX) { //while <2048
+      if (*s_ptr == ' ') {
+        s_ptr++;
+      }
+      else {
+        a_ptr->digit[pos>>3] |= ((uint32_t)hex2bin(*s_ptr)); //<< ((pos & 0x7)<<2)); /*left of |= equates to a_ptr->digit[0] while pos < 9, so the values currently in a_ptr->digit[0] is | with the value of *s_ptr shifted left by 4n bits. 0x7 kind of mods up to 7 bits so that the index of digit increments and *s_ptr shifts left a maximum of 7 hexbits.*/
+        printf("digit1: %x\n", a_ptr->digit[pos>>3]);
+        s_ptr++;          
+        if ((pos+1)%8 != 0 && *(s_ptr) != '\0') {
+          a_ptr->digit[pos>>3] =  a_ptr->digit[pos>>3] << 4; //need to stop the last iteration            
+        }
+        pos++;
+      }
+  }
+  a_ptr->used = (pos>>3) + ((pos&0x7)!=0); //counts how many 8 hex blocks have been populated
+}
+
+
+
 /*
+void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
 void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
   bu_clear(a_ptr); //set all 32 bits of a to 0
 
   unsigned pos = 0;
   char *s_ptr = s;
-  while (*s_ptr && pos < BU_MAX_HEX) {
-    a_ptr->digit[pos>>3] |= (((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2));
-    pos++;
-    s_ptr++;
-  }
-  a_ptr->used = (pos>>3) + ((pos&0x7)!=0);
-}
-
-*/
-
-void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
-  bu_clear(a_ptr); //set all 32 bits of a to 0
-  unsigned pos = 8;
-  char *s_ptr = s;
-  while (*s_ptr && pos < BU_MAX_HEX) { 
-      if (*s_ptr == ' ') {//discard whitespace 
-          s_ptr++;
+  while (*s_ptr && pos < BU_MAX_HEX) { //while <2048
+      if (*s_ptr == ' ') {
+        s_ptr++;
       }
       else {
-          printf("pre digit[pos>>3] : %x\n", a_ptr->digit[pos>>3]); 
-          a_ptr->digit[pos>>3] |= (((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2)); //pos >> 3 is shift-right by 1 hexbit == 4 bits 
-          printf("digit[pos>>3] : %x\n", a_ptr->digit[pos>>3]);
-          printf("%x\n",(((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2)));
-          printf("in readhex: %x\n", a_ptr->digit[a_ptr->base]);
-          pos--;
-          s_ptr++;    
+        a_ptr->digit[pos>>3] |= (((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2)); //left of |= equates to a_ptr->digit[0] while pos < 9, so the values currently in a_ptr->digit[0] is | with the value of *s_ptr shifted left by 4n bits. 0x7 kind of mods up to 7 bits so that the index of digit increments and *s_ptr shifts left a maximum of 7 hexbits.
+        pos++;
+        s_ptr++;          
       }
+
   }
-  a_ptr->used = (pos>>3) + ((pos&0x7)!=0);
+  a_ptr->used = (pos>>3) + ((pos&0x7)!=0); //counts how many 8 hex blocks have been populated
+  printf("a_ptr used: %x\n",a_ptr->used);
 }
+*/
 // 
 void bu_dbg_printf(bigunsigned *a_ptr) {
   printf("Used %x\n", a_ptr->used); //%x specifies hexadecimal output format
