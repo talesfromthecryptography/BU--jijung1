@@ -23,7 +23,7 @@ void bu_cpy(bigunsigned *dest, bigunsigned *src) {
 }
 
 // Set to 0
-void bu_clear(bigunsigned *a_ptr) {
+void bu_clear(bigunsigned *a_ptr) { //2nd call - set all 32 bits of a to 0
   memset(a_ptr->digit, 0, sizeof(uint32_t)*BU_DIGITS);
   a_ptr->used = 0;
   a_ptr->base = 0;
@@ -114,8 +114,9 @@ uint16_t bu_len(bigunsigned *a_ptr) {
 //        that will be ignored. For example, "DEAD BEEF" should
 //        be legal input resulting in the value 0xDEADBEEF.
 
-void bu_readhex(bigunsigned * a_ptr, char *s) {
-  bu_clear(a_ptr);
+/*
+void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
+  bu_clear(a_ptr); //set all 32 bits of a to 0
 
   unsigned pos = 0;
   char *s_ptr = s;
@@ -127,9 +128,31 @@ void bu_readhex(bigunsigned * a_ptr, char *s) {
   a_ptr->used = (pos>>3) + ((pos&0x7)!=0);
 }
 
+*/
+
+void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
+  bu_clear(a_ptr); //set all 32 bits of a to 0
+  unsigned pos = 8;
+  char *s_ptr = s;
+  while (*s_ptr && pos < BU_MAX_HEX) { 
+      if (*s_ptr == ' ') {//discard whitespace 
+          s_ptr++;
+      }
+      else {
+          printf("pre digit[pos>>3] : %x\n", a_ptr->digit[pos>>3]); 
+          a_ptr->digit[pos>>3] |= (((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2)); //pos >> 3 is shift-right by 1 hexbit == 4 bits 
+          printf("digit[pos>>3] : %x\n", a_ptr->digit[pos>>3]);
+          printf("%x\n",(((uint32_t)hex2bin(*s_ptr)) << ((pos & 0x7)<<2)));
+          printf("in readhex: %x\n", a_ptr->digit[a_ptr->base]);
+          pos--;
+          s_ptr++;    
+      }
+  }
+  a_ptr->used = (pos>>3) + ((pos&0x7)!=0);
+}
 // 
 void bu_dbg_printf(bigunsigned *a_ptr) {
-  printf("Used %x\n", a_ptr->used);
+  printf("Used %x\n", a_ptr->used); //%x specifies hexadecimal output format
   printf("Base %x\n", a_ptr->base);
   uint16_t i = a_ptr->used;
   printf("Digits: ");
