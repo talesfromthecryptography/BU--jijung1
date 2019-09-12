@@ -8,10 +8,10 @@ int main() {
   bigunsigned a,b,c;
   //char s[BU_MAX_HEX+1];
 
-  bu_readhex(&a,"CAB51AFFBEEE"); //currently appending to the right
+  bu_readhex(&a,"111122223333"); //currently appending to the right
     printf("\n\n\nfinished with a\n\n\n");
 
-  bu_readhex(&b,"a23456787765");
+  bu_readhex(&b,"222233334444");
       printf("\n\n\nfinished with b\n\n\n");
 
   

@@ -7,8 +7,8 @@
 #include <ctype.h>
 
 #define BU_DIGITS 256
-#define BU_MAX_HEX (BU_DIGITS<<3)
-#define BU_BITS (BU_DIGITS<<5)
+#define BU_MAX_HEX (BU_DIGITS<<3) //2048
+#define BU_BITS (BU_DIGITS<<5) 
 #define BU_BITS_PER_DIGIT 32
 
 typedef struct {

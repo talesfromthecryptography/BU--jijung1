@@ -7,18 +7,18 @@
 
 // Copy dest = src
 void bu_cpy(bigunsigned *dest, bigunsigned *src) {
-  uint16_t cnt = src->used;
-  dest->used = cnt;
-  dest->base = 0;
+  uint16_t cnt = src->used; //used is the number of digit indices occupied
+  dest->used = cnt; //set the same amt of digit indices for dest
+  dest->base = 0; //dunno yet
 
   // reset upper 0s in dest
-  memset(dest->digit, 0, sizeof(uint32_t)*BU_DIGITS-cnt);
+  memset(dest->digit, 0, sizeof(uint32_t)*BU_DIGITS-cnt); //replace all unused uppder digit indices to 0
 
-  uint8_t i_dest = 0; // TODO: This is wrong. Fix it.
-  uint8_t i_src = src->base;
+  uint8_t i_dest = 0; // TODO: This is wrong. Fix it. WHATDOYOUMEAN 
+  uint8_t i_src = src->base; 
 
   while (cnt-- > 0) {
-    dest->digit[i_dest--] = src->digit[i_src--];
+    dest->digit[i_dest--] = src->digit[i_src--]; //inf loop
   }
 }
 
@@ -32,14 +32,15 @@ void bu_clear(bigunsigned *a_ptr) {
 // Shift in place a bigunsigned by cnt bits to the left
 // Example: beef shifted by 4 results in beef0
 void bu_shl_ip(bigunsigned* a_ptr, uint16_t cnt) { 
-  uint16_t wrds = cnt >> 5; // # of whole words to shift
-  uint16_t bits = cnt &0x1f;// number of bits in a word to shift
+  uint16_t wrds = cnt >> 5; // # of whole words to shift (does this make it so that only 31bit shifts are possible?
+  uint16_t bits = cnt &0x1f;// number of bits in a word to shift 00..100 == cnt
 
-  uint32_t mask = 0xffffffff << bits;
+  uint32_t mask = 0xffffffff << bits; //255 1s shifted left by number of bits to shift 11..1000000
   
   //in order to shift a bigunsigned struct cnt bits to the left digit, used and base must all be updated 
 
   // You implement. Avoid memory copying as much as possible.
+  //a_ptr->digit[
   
 }
 
@@ -132,7 +133,7 @@ void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the he
         printf("digit1: %x\n", a_ptr->digit[pos>>3]);
         s_ptr++;          
         if ((pos+1)%8 != 0 && *(s_ptr) != '\0') {
-          a_ptr->digit[pos>>3] =  a_ptr->digit[pos>>3] << 4; //need to stop the last iteration            
+          a_ptr->digit[pos>>3] =  a_ptr->digit[pos>>3] << 4; //shl          
         }
         pos++;
       }
@@ -164,7 +165,20 @@ void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the he
   printf("a_ptr used: %x\n",a_ptr->used);
 }
 */
-// 
+void bu_dbg_printf(bigunsigned *a_ptr) {
+  printf("Used %x\n", a_ptr->used); //%x specifies hexadecimal output format
+  printf("Base %x\n", a_ptr->base);
+  uint16_t i = 0;
+  printf("Digits: ");
+  while (i < a_ptr->used) {
+        printf("%8x ", a_ptr->digit[a_ptr->base+i]);
+        i++;      
+    }
+
+  printf("Length: %x\n", bu_len(a_ptr));
+}
+
+/*
 void bu_dbg_printf(bigunsigned *a_ptr) {
   printf("Used %x\n", a_ptr->used); //%x specifies hexadecimal output format
   printf("Base %x\n", a_ptr->base);
@@ -174,3 +188,4 @@ void bu_dbg_printf(bigunsigned *a_ptr) {
     printf("%8x ", a_ptr->digit[a_ptr->base+i]);
   printf("Length: %x\n", bu_len(a_ptr));
 }
+*/
