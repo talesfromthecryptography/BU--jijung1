@@ -14,7 +14,7 @@ void bu_cpy(bigunsigned *dest, bigunsigned *src) {
   // reset upper 0s in dest
   memset(dest->digit, 0, sizeof(uint32_t)*BU_DIGITS-cnt); //replace all unused uppder digit indices to 0
 
-  uint8_t i_dest = 0; // TODO: This is wrong. Fix it. WHATDOYOUMEAN 
+  uint8_t i_dest = 0; // TODO: This is wrong. Fix it.  
   uint8_t i_src = src->base; 
 
   while (cnt-- > 0) {
@@ -29,19 +29,103 @@ void bu_clear(bigunsigned *a_ptr) {
   a_ptr->base = 0;
 }
 
+/*
+ * in order to shift a bigunsigned struct cnt bits to the left digit, used and base must all be updated
+  If no carry propagates in the little end, only internal calculation needed. just left shift by cnt.
+ * 
+ */
 // Shift in place a bigunsigned by cnt bits to the left
 // Example: beef shifted by 4 results in beef0
 void bu_shl_ip(bigunsigned* a_ptr, uint16_t cnt) { 
-  uint16_t wrds = cnt >> 5; // # of whole words to shift (does this make it so that only 31bit shifts are possible?
+  uint16_t wrds = cnt >> 5; // # of whole words to shift 
+ // uint16_t wrds2 = cnt >> 5;
   uint16_t bits = cnt &0x1f;// number of bits in a word to shift 00..100 == cnt
-
   uint32_t mask = 0xffffffff << bits; //255 1s shifted left by number of bits to shift 11..1000000
   
-  //in order to shift a bigunsigned struct cnt bits to the left digit, used and base must all be updated 
-
-  // You implement. Avoid memory copying as much as possible.
-  //a_ptr->digit[
+  uint8_t i = 0;
+  uint32_t usedbits = a_ptr->digit[a_ptr->used-1];
+  printf("usedbits: %x\n", usedbits);
+  while (usedbits > 0) {
+    usedbits = usedbits >> 1;
+    printf("usedbits after shift: %x\n",usedbits);
+    i++;
+  }
+  uint8_t j = bits + i;
+  printf("i: %d\n", i);
+  if (bits+i-32 > 0) {
+    a_ptr->digit[a_ptr->used-1] = a_ptr->digit[a_ptr->used-1] << (32-i);
+    a_ptr->used++;
+  }
+  else {
+    a_ptr->digit[a_ptr->used-1] = a_ptr->digit[a_ptr->used-1] << bits;    
+  }
   
+  while (j > 32) {
+    printf("shifting by wordsize\n");
+    a_ptr->digit[a_ptr->used] = 0x00000000;
+    a_ptr->used++;
+    j-=32;
+  }
+  if (bits+i-32 > 0) {
+    printf("shifting the remaining bits\n");
+    a_ptr->digit[a_ptr->used-1] = a_ptr->digit[a_ptr->used-1] << (bits+i-32);
+  }
+  
+  /*
+  
+  
+  printf("wrds2: %d\ntarget index: %x\n",wrds2, a_ptr->digit[a_ptr->used-1-wrds2]);
+  if ((a_ptr->digit[a_ptr->used-1-wrds2] >> (32 - bits)) > 0) { //check for carry, 
+     //   a_ptr->digit[a_ptr->used-1-wrds2] = a_ptr->digit[a_ptr->used-1-wrds2] << cnt;
+  }
+  else { //only need to shift the used-1-wrds index
+      a_ptr->digit[a_ptr->used-1-wrds2] = a_ptr->digit[a_ptr->used-1-wrds2] << bits;
+  }
+
+  */
+ // printf("words do something : %x\n",a_ptr->digit[a_ptr->used-1]);
+  //a_ptr->digit[a_ptr->used] = a_ptr->digit[a_ptr->used] << cnt;
+  //a_ptr->digit[a_ptr->used-1] << cnt;
+  //a_ptr->digit[pos>>3] =  a_ptr->digit[pos>>3] << 4
+  
+}
+
+void bu_shr_ip(bigunsigned* a_ptr, uint16_t cnt) {
+    uint16_t shift = 0;
+    uint32_t carry = 0;
+    if (cnt%32 != 0) {
+        shift = cnt%32;
+        if (cnt/32 > 0) {
+            //need to iteratively shift a_ptr->digit here. Can't just do what i have on the next line.
+            //a_ptr->digit >> (cnt/32) * 32; //truncate cnt
+        }        
+        int i = cnt/32;
+        while (i < a_ptr->used-1) {
+           
+        }
+
+        
+    }
+    else {
+        int j = cnt/32;
+        while (--j > 0) {
+           // printf ("j: %d\n",j);
+            a_ptr->digit[a_ptr->used-1 + j] = a_ptr->digit[a_ptr->used-1]; 
+           // printf("used-1+j: %x\n", a_ptr->digit[a_ptr->used-1+j]);
+        }
+    }
+   
+    /*
+     *starting with the 0th index, store cnt%32 msbs
+     * if cnt / 32 > 0, shift a_ptr to the right by cnt/32 indices (>>1 = 1 hexbit, so if cnt / 32 = 2, you would >> 64
+     * afterwards, starting with index cnt/32, you would shr by cnt%32 and insert the saved carry (do this iteratively until least sig index)
+     * then for digit[used-1], if (4*(cnt%32) + digit[used-1]) / 32 > 0, save (4*(cnt%32) + digit[used-1]) % 32 as carry.
+     *then shr by cnt%32 and insert the saved carry. insert the next saved carry in the following index.
+     * 
+     * 
+     */
+    
+    
 }
 
 // Produce a = b + c
@@ -120,7 +204,7 @@ uint16_t bu_len(bigunsigned *a_ptr) {
 
 
 void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the hex data to be read
-  bu_clear(a_ptr); //set all 32 bits of a to 0
+  bu_clear(a_ptr);
   
   unsigned pos = 0;
   char *s_ptr = s;
@@ -129,10 +213,11 @@ void bu_readhex(bigunsigned * a_ptr, char *s) { //first call - char *s is the he
         s_ptr++;
       }
       else {
-        a_ptr->digit[pos>>3] |= ((uint32_t)hex2bin(*s_ptr)); //<< ((pos & 0x7)<<2)); /*left of |= equates to a_ptr->digit[0] while pos < 9, so the values currently in a_ptr->digit[0] is | with the value of *s_ptr shifted left by 4n bits. 0x7 kind of mods up to 7 bits so that the index of digit increments and *s_ptr shifts left a maximum of 7 hexbits.*/
-        printf("digit1: %x\n", a_ptr->digit[pos>>3]);
+        a_ptr->digit[pos>>3] |= ((uint32_t)hex2bin(*s_ptr)); /*left of |= equates to a_ptr->digit[0] while pos < 9, so the values currently in                         a_ptr->digit[0] is | with the value of *s_ptr shifted left by 4n bits. */
+
+        //printf("digit1: %x\n", a_ptr->digit[pos>>3]);
         s_ptr++;          
-        if ((pos+1)%8 != 0 && *(s_ptr) != '\0') {
+        if ((pos+1)%8 != 0 && *(s_ptr) != '\0') { //if current index is full or there are no more hexbits to read in 
           a_ptr->digit[pos>>3] =  a_ptr->digit[pos>>3] << 4; //shl          
         }
         pos++;

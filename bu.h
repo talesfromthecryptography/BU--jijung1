@@ -24,7 +24,7 @@ void bu_cpy(bigunsigned *dest, bigunsigned *src);
 void bu_clear(bigunsigned *a_ptr);
 
 //  a = b<<cnt
-void bu_shl(bigunsigned* a_ptr, uint16_t cnt);
+void bu_shl(bigunsigned* a_ptr, bigunsigned* b_ptr, uint16_t cnt);
 //  a <<= cnt
 // Shift in place a big unsigned by cnt bits to the left
 // Example: beef shifted by 4 results in beef0
@@ -33,7 +33,7 @@ void bu_shl_ip(bigunsigned* a_ptr, uint16_t cnt);
 //  a = b>>cnt
 void bu_shr(bigunsigned* a_ptr, uint16_t cnt);
 //  a >>= cnt
-// Shift in place a big unsigned by cnt bits to the left
+// Shift in place a big unsigned by cnt bits to the left\\\\\
 // Example: beef shifted by 4 results in beef0
 void bu_shr_ip(bigunsigned* a_ptr, uint16_t cnt);
 
@@ -45,6 +45,12 @@ void bu_add_ip(bigunsigned *a_ptr, bigunsigned *b_ptr);
 
 
 // a = b*d
+/*
+ *multiply every digit of first num by every digit of 2nd
+ *propagate carries 
+ * 
+ * Ripple Carry Adder
+*/
 void bu_mul_digit(bigunsigned *a_ptr, bigunsigned *b_ptr, uint32_t d);
 // a *= d
 void bu_mul_digit_ip(bigunsigned *a_ptr, uint32_t d);
@@ -83,7 +89,7 @@ static inline uint8_t hex2bin(char c) {
 //       Modify to resolve 'endian' conflict.
 //       Also modify to permit strings to include whitespace
 //        that will be ignored. For example, "DEAD BEEF" should
-//        be legal input resulting in te value 0xDEADBEEF.
+//        be legal input resulting in the value 0xDEADBEEF.
 
 void bu_readhex(bigunsigned * a_ptr, char *s);
 // 
