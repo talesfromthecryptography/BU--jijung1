@@ -5,26 +5,62 @@
 
 
 int main() {
-  bigunsigned a,b,c;
+  bigunsigned a,b,c,d;
   //char s[BU_MAX_HEX+1];
 
-  bu_readhex(&a,"12341234aaaa1"); //currently appending to the right
+  bu_readhex(&a,"deadbeef12345678");
    // bigunsigned* ptr = &a;
 
-  bu_readhex(&b,"1111111111111111111111111111111111110001");
-//printf("numerical value of digit[used-1]: %d\n", ptr->digit[ptr->used-1]);
-
-  bu_dbg_printf(&a);
+  bu_readhex(&b,"111111110000");
   
-  bu_shl_ip(&a,4);
-  printf("after SHL: \n");
-      bu_dbg_printf(&a);
+    bu_shl_ip(&a,1);
+    printf("shl by 1...\n");
+    bu_dbg_printf(&a);
 
-    bu_shl_ip(&a,28);
-  printf("after SHL: \n");
+    bu_shl_ip(&a,4);
+    printf("shl by 4...\n");
+    bu_dbg_printf(&a);
+
+    bu_shl_ip(&a,8);
+    printf("shl by 8...\n");
+    bu_dbg_printf(&a);
+        bu_shl_ip(&a,16);
+    printf("shl by 16...\n");
+    bu_dbg_printf(&a);
+    
+         bu_shl_ip(&a,32);
+    printf("shl by 32...\n");
+    bu_dbg_printf(&a);
+  
+    bu_dbg_printf(&a);
+
+    printf("shr by 1...\n");
+
+    bu_shr_ip(&a,1);
+    bu_dbg_printf(&a);
+    printf("shr by 4...\n");
+
+    bu_shr_ip(&a,4);
+    bu_dbg_printf(&a);
+    printf("shr by 8...\n");
+
+    bu_shr_ip(&a,8);
+    bu_dbg_printf(&a);
+    printf("shr by 16...\n");
+
+    bu_shr_ip(&a,16);
+    bu_dbg_printf(&a);
+    printf("shr by 33...\n");
+    bu_shr_ip(&a,32);
     bu_dbg_printf(&a);
     
 
+    
+  printf("a:\n");
+  bu_dbg_printf(&a);
+
+ 
+  
     
 
 
